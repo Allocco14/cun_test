@@ -4,12 +4,17 @@ import asyncio
 import logging
 import os
 import sys
+import warnings
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StdioServerParameters
+from google.adk.tools.mcp_tool.mcp_toolset import (
+    McpToolset,
+    StdioConnectionParams,
+    StdioServerParameters,
+)
 from google.genai.types import Content, Part
 from rich.console import Console
 from rich.panel import Panel
@@ -17,11 +22,23 @@ from rich.text import Text
 
 load_dotenv()
 
+# Silence noisy third-party deprecation and experimental warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="authlib")
+warnings.filterwarnings("ignore", category=UserWarning, module="google.adk.features")
+
 logging.basicConfig(
     level=logging.WARNING,
     format='{"time":"%(asctime)s","level":"%(levelname)s","logger":"%(name)s","msg":"%(message)s"}',
 )
 log = logging.getLogger("agent")
+
+# Suppress verbose library loggers that bleed into the terminal
+for _noisy in (
+    "google_adk.google.adk.tools.mcp_tool.mcp_session_manager",
+    "google_genai.types",
+    "google_genai._api_client",
+):
+    logging.getLogger(_noisy).setLevel(logging.ERROR)
 
 console = Console()
 
@@ -49,10 +66,12 @@ def build_agent() -> Agent:
 
     toolsets = [
         McpToolset(
-            connection_params=StdioServerParameters(
-                command=py,
-                args=["-m", module],
-                env=env,
+            connection_params=StdioConnectionParams(
+                server_params=StdioServerParameters(
+                    command=py,
+                    args=["-m", module],
+                    env=env,
+                )
             )
         )
         for module in _MCP_MODULES
