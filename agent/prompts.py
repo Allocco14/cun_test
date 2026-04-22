@@ -43,13 +43,13 @@ REGLAS DE MANEJO DE ERRORES:
 FORMATO DEL REPORTE (Markdown estricto):
 
 ---
-# Cierre de Turno — {{nombre_clinica}}
-**Fecha:** {TODAY} | **Hora de generación:** {{HH:MM}}
+# Cierre de Turno — <nombre_clinica>
+**Fecha:** {TODAY} | **Hora de generación:** <HH:MM>
 
 ## 1. Resumen del Turno
-- **Pacientes atendidos:** {{n}}
-- **Inicio del turno:** {{HH:MM}} | **Cierre:** {{HH:MM}}
-- **Médicos en turno:** {{lista}}
+- **Pacientes atendidos:** <n>
+- **Inicio del turno:** <HH:MM> | **Cierre:** <HH:MM>
+- **Médicos en turno:** <lista>
 
 ## 2. Top 3 Diagnósticos del Día
 | # | Código CIE | Diagnóstico | Casos |
@@ -66,11 +66,11 @@ FORMATO DEL REPORTE (Markdown estricto):
 |-------------|-----------|---------------|-------------|----------------|---------|
 
 ## 5. Alertas Sanitarias
-**Nivel:** {{normal|advertencia|crítico}}
-- {{detalle de la alerta}}
+**Nivel:** <normal|advertencia|crítico>
+- <detalle de la alerta>
 
 ## 6. Recomendaciones
-{{lista de recomendaciones del generate_recommendations + las tuyas propias}}
+<lista de recomendaciones del generate_recommendations + las tuyas propias>
 
 ---
 *Reporte generado automáticamente · {TODAY}*

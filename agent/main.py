@@ -4,13 +4,12 @@ import asyncio
 import logging
 import os
 import sys
-from contextlib import AsyncExitStack
 
 from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset, StdioServerParameters
+from google.adk.tools.mcp_tool.mcp_toolset import McpToolset, StdioServerParameters
 from google.genai.types import Content, Part
 from rich.console import Console
 from rich.panel import Panel
@@ -41,36 +40,33 @@ _MCP_MODULES = [
 # Agent factory
 # ---------------------------------------------------------------------------
 
-async def build_agent() -> tuple[Agent, AsyncExitStack]:
-    """Connects to all MCP servers and returns a configured ADK Agent."""
+def build_agent() -> Agent:
+    """Creates an ADK Agent wired to all MCP servers."""
     from agent.prompts import SYSTEM_PROMPT  # imported here so TODAY is evaluated at runtime
 
-    stack = AsyncExitStack()
     py  = sys.executable
     env = dict(os.environ)
 
-    all_tools: list = []
-    for module in _MCP_MODULES:
-        tools, ctx = await MCPToolset.from_server(
+    toolsets = [
+        McpToolset(
             connection_params=StdioServerParameters(
                 command=py,
                 args=["-m", module],
                 env=env,
             )
         )
-        await stack.enter_async_context(ctx)
-        all_tools.extend(tools)
-        log.info('{"event":"mcp_connected","module":"%s","tools":%d}', module, len(tools))
+        for module in _MCP_MODULES
+    ]
 
-    agent = Agent(
+    log.info('{"event":"agent_built","toolsets":%d}', len(toolsets))
+
+    return Agent(
         name="clinical_shift_agent",
         model=os.getenv("AGENT_MODEL", "gemini-2.0-flash"),
         description="Agente autónomo de cierre de turno para clínicas ambulatorias.",
         instruction=SYSTEM_PROMPT,
-        tools=all_tools,
+        tools=toolsets,
     )
-
-    return agent, stack
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +79,7 @@ async def run(prompt: str) -> str:
 
     console.print(Panel(Text(prompt, style="bold cyan"), title="Prompt", border_style="cyan"))
 
-    agent, exit_stack = await build_agent()
+    agent = build_agent()
 
     session_service = InMemorySessionService()
     runner = Runner(agent=agent, app_name=APP_NAME, session_service=session_service)
@@ -109,8 +105,6 @@ async def run(prompt: str) -> str:
                 else:
                     preview = text[:100].replace("\n", " ")
                     console.print(f"  [dim]↳ {preview}…[/dim]" if len(text) > 100 else f"  [dim]↳ {text}[/dim]")
-
-    await exit_stack.aclose()
 
     if final_text:
         console.print(Panel(final_text, title="[bold green]Resumen del Agente[/bold green]", border_style="green"))
