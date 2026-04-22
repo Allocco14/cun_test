@@ -3,8 +3,6 @@
 import json
 import sqlite3
 
-import pytest
-
 import mcp_servers.database.server as db_server
 from tests.conftest import TODAY, TEST_CLINIC
 
