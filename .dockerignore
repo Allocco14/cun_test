@@ -1,0 +1,20 @@
+.venv/
+.git/
+.gitattributes
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Secrets and local config
+.env
+CLAUDE.md
+
+# Runtime output (se montan como volúmenes)
+data/*.db
+workspace/cierre_*.md
+
+# Files not needed inside the image
+test.html
+uv.lock.bak
