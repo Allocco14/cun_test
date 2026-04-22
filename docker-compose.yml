@@ -1,0 +1,31 @@
+services:
+
+  # ── Poblar la base de datos con datos del turno de hoy ──────────────────────
+  seed:
+    build: .
+    volumes:
+      - clinic_data:/app/data
+    entrypoint: ["uv", "run", "python", "-m", "mcp_servers.database.seed"]
+
+  # ── Ejecutar el agente ───────────────────────────────────────────────────────
+  agent:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_PATH: data/clinic.db
+      WORKSPACE_PATH: workspace
+    volumes:
+      - clinic_data:/app/data
+      - ./workspace:/app/workspace   # reportes quedan accesibles en el host
+
+  # ── Suite de tests (no requiere GOOGLE_API_KEY) ─────────────────────────────
+  test:
+    build: .
+    volumes:
+      - /tmp/test_data:/app/data     # datos efímeros, no comparte con agent
+    entrypoint: ["uv", "run", "pytest", "-v", "--tb=short"]
+
+volumes:
+  clinic_data:   # SQLite persistido entre ejecuciones del agente
