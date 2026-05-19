@@ -25,7 +25,7 @@ cp .env.example .env
 # Editar .env y completar GOOGLE_API_KEY
 
 # 3. Poblar base de datos con datos del turno de hoy
-uv run python -m mcp_servers.database.seed
+uv run -m mcp_servers.database.seed
 
 # 4. Ejecutar el agente
 uv run cun-agent "Genera el cierre del turno de hoy para la clínica Centro Médico Norte"

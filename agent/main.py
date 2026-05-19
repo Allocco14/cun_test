@@ -81,7 +81,7 @@ def build_agent() -> Agent:
 
     return Agent(
         name="clinical_shift_agent",
-        model=os.getenv("AGENT_MODEL", "gemini-2.0-flash"),
+        model=os.getenv("AGENT_MODEL", "gemini-2.5-flash"),
         description="Agente autónomo de cierre de turno para clínicas ambulatorias.",
         instruction=SYSTEM_PROMPT,
         tools=toolsets,
